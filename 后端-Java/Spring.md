@@ -506,6 +506,19 @@ public class WebConfiguration implements WebMvcConfigurer {
     }
 }
 ```
+## Jackson
+[Jackson doc](https://www.baeldung.com/jackson)
+
+可以通过自定义`Jackson2ObjectMapperBuilder`来定制`ObjectMapper`
+```java
+@Bean  
+public Jackson2ObjectMapperBuilder jackson2ObjectMapperBuilder() {  
+    DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd", Locale.CHINESE);  
+    return new Jackson2ObjectMapperBuilder().serializers(new LocalDateTimeSerializer(dateTimeFormatter),  
+                    new ZonedDateTimeSerializer(dateTimeFormatter))  // 修改时间格式
+            .serializationInclusion(JsonInclude.Include.NON_NULL);   // 忽略null值
+}
+```
 
 ## 网络状态码
 HTTP 响应状态码用来表明特定 [HTTP](https://developer.mozilla.org/zh-CN/docs/Web/HTTP) 请求是否成功完成。 响应被归为以下五大类：

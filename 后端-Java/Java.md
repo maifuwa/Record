@@ -169,14 +169,9 @@ void someTest() {
 }
 ```
 
-# JSON
-`Java`的`JSON`解析框架，三分天下 `Jackson`、`Gson`、`fastjson`
-### jackson
-
-~~等待填坑~~
-### fastJson2
+# fastJson2
 [fastjson2 APIdoc](https://javadoc.io/doc/com.alibaba.fastjson2/fastjson2/2.0.40/com/alibaba/fastjson2/JSONObject.html)
-`fastjson2` 是阿里巴巴的一个json解析工具效率高于jackson、Gosn，能够同时用于web、android项目且api一致
+`fastjson2` 是阿里巴巴的一个Json解析工具效率高于Jackson、Gosn，能够同时用于web、android项目且api一致
 ```xml
 <dependency>
     <groupId>com.alibaba.fastjson2</groupId>
@@ -184,7 +179,7 @@ void someTest() {
     <version>{fastjson2.version}</version>
 </dependency>
 ```
-#### Json解析
+## Json解析
 ```java
 String json = "...";
 byte[] json = "...";
@@ -199,7 +194,7 @@ String json = JSON.toJSONString(account);
 byte[] byJson = JSON.toJSONBytes(account);
 ```
 
-#### JSONObject、JSONArray
+## JSONObject、JSONArray
 获取简单属性 注意只能拿到第一层的数据
 ```java
 String json = "{\"id\": 2,\"name\": \"fastjson2\"}";
@@ -238,7 +233,6 @@ String json = JSONObject.toJSONString(account, JSONWriter.Feature.WriteNulls);
 `Guava`是由`Google`开发和维护的一套`Java`库，提供实用的工具类和`api`，包括集合操作、并发工具、字符串处理、`I/O`操作、数学工具等等
 ## 缓存
 `Guava`基于`ConcurrentHashMap`实现缓存，它使用了分段锁机制来保证线程安全，并提供了多种缓存清理策略
-
 ## 限流
 使用`guava`的限流工具`RateLimiter`做单体限流，`RateLimiter` 基于令牌桶算法，可以应对突发流量。还提供了**平滑预热限流**的算法实现
 > 平滑突发限流就是按照指定的速率放令牌到桶里，而平滑预热限流会有一段预热时间，预热时间之内，速率会逐渐提升到配置的速率。
