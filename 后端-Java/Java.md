@@ -32,10 +32,21 @@ distinct // 去重
 skip(2) // 跳过前2个元素
 limit(2) // 截取前2个元素
 flatMap // Stream.of(List.of(1, 2, 3), List.of(1, 2, 3), List.of(1, 2, 3)).flatMap(list -> list.stream());
-parallel // 启用多线程，会自动以多个线程执行后续方法
+parallel // 并行流  启用多线程，会自动以多个线程执行后续方法
 
 Stream.concat(s1, s2) // 合并两个Stream，静态方法
 ```
+
+Java 的 Stream 在以下情况下可能会有多线程风险：
+1. **使用并行流（Parallel Stream）时**：
+    - 并行流会将任务分成多个子任务并行执行，如果操作不是线程安全的，可能会导致数据竞争和不一致性。
+2. **共享可变状态**：
+    - 如果流操作中使用了共享的可变状态（例如，外部变量或集合），并且这些状态在多个线程中被修改，可能会导致线程安全问题。
+3. **非线程安全的终端操作**：
+    - 终端操作（例如 `collect`）如果使用了非线程安全的集合或数据结构，可能会导致并发修改异常或数据不一致。
+4. **自定义的非线程安全的中间操作**：
+    - 如果自定义了中间操作，并且这些操作不是线程安全的，也可能会导致多线程问题。
+
 ## Optional
 非空判断
 ```java
@@ -158,16 +169,18 @@ ZonedDateTime zdt = ins.atZone(ZoneId.systemDefault());
 @Builder  
 public class Article {  
     String title;  
-    Instant createdTime;  
+    @Builder.Default
+    Instant createdTime = Instant.now();  
 }
 
 void someTest() {
 	Article article = Article.builder()  
 	    .title("title")  
-	    .createdTime(Instant.now())  
 	    .build();
 }
 ```
+
+> `@Builder`模式字段有默认值时，需要在字段上添加`@Builder.Default`
 
 # fastJson2
 [fastjson2 APIdoc](https://javadoc.io/doc/com.alibaba.fastjson2/fastjson2/2.0.40/com/alibaba/fastjson2/JSONObject.html)
@@ -401,7 +414,18 @@ public static void main(String[] args) {
 ```
 ## Quartz
 
+### Cron
+定时任务表达式，格式：`second minute hour day month week [year]`
+可填数组或字符`* ? - , / L W C #`
+> `*` 表示每一个，放在`day`就是每天
+> `-` 表示范围，如`5-7`放在`day`上就是`5号~7号`
+> `,` 表示列表，如`5,7`放在`day`上就是`5号和7号`
+> `/` 表示等长序列，如`1/5`放在`day`上就是`1号、6号...(每5天执行一次任务)`
+> `?` 表示无意义，只能在`day`和`week`中使用
+> `L` 表示`Last`，只能在`day`和`week`中使用
+> `W` 表示距当前最近的工作日不可以跨月，只能在`day`中使用
 
+如：`0/20 0/30 * * 7,8 ? *` 表示`Every 20 seconds, every 30 minutes, every hour, every day, only in July and August`
 # 生成ID
 [ID使用场景](https://javaguide.cn/distributed-system/distributed-id-design.html)
 ## UUID
