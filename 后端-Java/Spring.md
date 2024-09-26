@@ -23,7 +23,7 @@ server:
 
 [maven详解](https://juejin.cn/post/7238823745828405308)
 ## 日志
-`Spring`默认使用`Logback`作为日志实现层，`Slf4j`作为日志适配层
+`Spring`默认使用`Logback`作为日志实现层，`Slf4j`作为日志接口层
 
 Log Level: `ERROR`, `WARN`, `INFO`, `DEBUG`, or `TRACE`  default `INFO`
 
@@ -106,6 +106,7 @@ logging:
 </configuration>
 ```
 
+> [logback日志配置项](https://logback.qos.ch/manual/configuration.html)
 ## Spring aop
 [spring aop 中文文档](https://springdoc.cn/spring/core.html#aop)  
 Spring提供了面向切面编程的丰富支持，允许通过分离应用的业务逻辑与系统级服务（例如审计（auditing）和事务（transaction）管理）进行内聚性的开发  
@@ -159,7 +160,7 @@ public @interface ALog {
 }
 ```
 `execution`执行表达式的格式`execution(modifiers-pattern? ret-type-pattern declaring-type-pattern?name-pattern(param-pattern) throws-pattern?)`  
-依次是：方法修饰符、返回值类型、包名+类名、方法名(参数列表)、可能抛出的异常类型；中间三个之外为可选项  
+依次是：方法修饰符、返回值类型、包名+类名.方法名(参数列表)、可能抛出的异常类型；中间两个之外为可选项  
 例子：`"execution(* com.example.demo.DemoController.*(String, *))"`
 
 > 注意：在Spring AOP中，切面本身不能成为其他切面的advice的目标。类上的 `@Aspect` 注解将其标记为一个切面，因此，将其排除在自动代理之外。
@@ -207,25 +208,32 @@ spring aop主要有两种实现方式：
 - `@Caching`: 将多个缓存操作重新分组，应用在一个方法上。
 - `@CacheConfig`: 分享一些常见的类级别的缓存相关设置。
 ## Spring async
-从Spring3开始提供了@Async注解，该注解可以被标在方法上，以便异步地调用该方法。调用者将在调用时立即返回，方法的实际执行将提交给Spring TaskExecutor的任务中，由指定的线程池中的线程执行。
+从Spring3开始提供了`@Async`注解，该注解可以被标在方法上，以便异步地调用该方法。调用者将在调用时立即返回，方法的实际执行将提交给`Spring TaskExecutor`的任务中，由指定的线程池中的线程执行。
 
 > 注意：生产环境不建议使用默认配置，默认的线程池实现`SimpleAsyncTaskExecutor`不是真的线程池，每次调用都会创建一个新线程
 
-异步不生效原因:
+> 异步不生效原因:
 1. 没有在配置类添加`@EnableAsync`
-2. 调用方和`@Async`能在一个类中(因为是使用代理实现的异步，当同一个类内部调用时，实际上是绕过了代理，从而导致`@Async`注解无效。)
-3. 注解`@Async`的方法不是public方法
-4. 注解`@Async`的返回值只能为void或Future
-5. 在Async方法上标注`@Transactional`是没用的，但在Async方法调用的方法上标注`@Transcational`是有效的；
+2. 调用方和`@Async`方法在一个类中(因为是使用代理实现的异步，当同一个类内部调用时，实际上是绕过了代理，从而导致`@Async`注解无效)
+3. 注解`@Async`的方法不是`public`方法
+4. 注解`@Async`的返回值只能为`void`或`Future`
+5. 在`@Async`方法上标注`@Transactional`是没用的，但在`@Async`方法调用的方法上标注`@Transcational`是有效的(看事务传播机制)
 6. ....
+
+> 同样备注下事务不生效的原因:
+1. 方法自调用 (`spring`声明式事务底层实现是`aop`，如果内部调用方法再生成代理类后调用的还是原本没有添加事务的方法)
+2. 异常被捕获了，或者抛出的异常不在回滚范围
+3. 方法非`public`
+4. 调用方法的类不是`spring bean`
+5. 数据库不支持事务
 
 #### 指定线程池
 自定义线程池有如下模式:
-- 重新实现接口AsyncConfigurer
-- 继承AsyncConfigurerSupport
-- 配置由自定义的TaskExecutor替代内置的任务执行器
+- 重新实现接口`AsyncConfigurer`
+- 继承`AsyncConfigurerSupport`
+- 配置由自定义的`TaskExecutor`替代内置的任务执行器
 
-配置由自定义的TaskExecutor替代内置的任务执行器
+配置由自定义的`TaskExecutor`替代内置的任务执行器
 ```java
 @Configuration  
 public class ThreadPoolConfig {  
@@ -793,7 +801,6 @@ mybatis:
     </properties>
 
     <dependencies>
-
         <dependency>
             <groupId>org.mybatis</groupId>
             <artifactId>mybatis</artifactId>
@@ -832,6 +839,7 @@ mybatis:
 ```
 
 2. 在`resources`目录配置`generatorConfig.xml`和`config.properties`
+
 config.properties
 ```properties
 jdbc.driverClass=com.mysql.cj.jdbc.Driver  
@@ -841,52 +849,51 @@ jdbc.password=password
 ```
 generatorConfig.xml
 ```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE generatorConfiguration
-        PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN"
-        "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
-<generatorConfiguration>
-    <properties resource="config.properties"/>
-
-    <context id="mysql" targetRuntime="MyBatis3" defaultModelType="flat">
-        <!-- 配置SQL语句中的前置分隔符 -->
-        <property name="beginningDelimiter" value="`"/>
-        <!-- 配置SQL语句中的后置分隔符 -->
-        <property name="endingDelimiter" value="`"/>
-        <!-- 配置生成Java文件的编码 -->
-        <property name="javaFileEncoding" value="UTF-8"/>
-
-        <!-- 为模型生成序列化方法 -->
-        <plugin type="org.mybatis.generator.plugins.SerializablePlugin"/>
-        <!-- 为生成的Java模型创建一个toString方法 -->
-        <plugin type="org.mybatis.generator.plugins.ToStringPlugin"/>
-        <!--为创建的model添加equal和hashcode方法-->
-        <plugin type="org.mybatis.generator.plugins.EqualsHashCodePlugin"/>
-        <!-- 生成mapper.xml时覆盖原文件 -->
-        <plugin type="org.mybatis.generator.plugins.UnmergeableXmlMappersPlugin" />
-
-        <!--关闭注释生成-->
-        <commentGenerator>
-            <property name="suppressAllComments" value="true"/>
-            <property name="suppressDate" value="true"/>
-            <property name="addRemarkComments" value="true"/>
-        </commentGenerator>
-
-        <jdbcConnection driverClass="${jdbc.driverClass}" connectionURL="${jdbc.url}"
-                        userId="${jdbc.user}" password="${jdbc.password}">
-            <!--高版本需要配置-->
-            <property name="nullCatalogMeansCurrent" value="true"/>
-        </jdbcConnection>
-        <javaModelGenerator targetPackage="com.bigboss.aoplogger.model" targetProject="src/main/java"/>
-
-        <sqlMapGenerator targetPackage="mapper" targetProject="src/main/resources"/>
-
-        <javaClientGenerator type="XMLMAPPER" targetPackage="com.bigboss.aoplogger.mapper" targetProject="src/main/java"/>
-
-        <table tableName="%">
-            <!-- 用来指定主键生成策略 -->
-            <generatedKey column="id" sqlStatement="MySql" identity="true"/>
-        </table>
+<?xml version="1.0" encoding="UTF-8"?>  
+<!DOCTYPE generatorConfiguration  
+        PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN"  
+        "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">  
+<generatorConfiguration>  
+    <properties resource="config.properties"/>  
+  
+    <context id="mysql" targetRuntime="MyBatis3" defaultModelType="flat">  
+        <!-- 配置SQL语句中的前置分隔符 -->  
+        <property name="beginningDelimiter" value="`"/>  
+        <!-- 配置SQL语句中的后置分隔符 -->  
+        <property name="endingDelimiter" value="`"/>  
+        <!-- 配置生成Java文件的编码 -->  
+        <property name="javaFileEncoding" value="UTF-8"/>  
+  
+        <!-- 为模型生成序列化方法 -->  
+        <plugin type="org.mybatis.generator.plugins.SerializablePlugin"/>  
+        <!-- 为生成的Java模型创建一个toString方法 -->  
+        <plugin type="org.mybatis.generator.plugins.ToStringPlugin"/>  
+        <!--为创建的model添加equal和hashcode方法-->  
+        <plugin type="org.mybatis.generator.plugins.EqualsHashCodePlugin"/>  
+        <!-- 生成mapper.xml时覆盖原文件 -->  
+        <plugin type="org.mybatis.generator.plugins.UnmergeableXmlMappersPlugin" />  
+  
+        <!--关闭注释生成-->  
+        <commentGenerator>  
+            <property name="suppressAllComments" value="true"/>  
+            <property name="suppressDate" value="true"/>  
+            <property name="addRemarkComments" value="true"/>  
+        </commentGenerator>  
+        <jdbcConnection driverClass="${jdbc.driverClass}" connectionURL="${jdbc.url}"  
+                        userId="${jdbc.user}" password="${jdbc.password}">  
+            <!--高版本需要配置-->  
+            <property name="nullCatalogMeansCurrent" value="true"/>  
+        </jdbcConnection>        
+        <javaModelGenerator targetPackage="com.bigboss.domain" targetProject="src/main/java"/>  
+  
+        <sqlMapGenerator targetPackage="mapper" targetProject="src/main/resources"/>  
+  
+        <javaClientGenerator type="XMLMAPPER" targetPackage="com.bigboss.mapper" targetProject="src/main/java"/>  
+  
+        <table tableName="%">  
+            <!-- 用来指定主键生成策略 -->  
+            <generatedKey column="id" sqlStatement="MySql" identity="true"/>  
+        </table>    
     </context>
 </generatorConfiguration>
 ```

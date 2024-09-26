@@ -31,22 +31,39 @@ sorted  //排序
 distinct // 去重
 skip(2) // 跳过前2个元素
 limit(2) // 截取前2个元素
-flatMap // Stream.of(List.of(1, 2, 3), List.of(1, 2, 3), List.of(1, 2, 3)).flatMap(list -> list.stream());
+flatMap // 一对多转换，将每个元素映射为一个流，将多个流扁平为一个单一的流 
 parallel // 并行流  启用多线程，会自动以多个线程执行后续方法
 
 Stream.concat(s1, s2) // 合并两个Stream，静态方法
+
+
+// 使用 stream 分割 list
+private static <T> List<List<T>> splitList(List<T> list, int size) {  
+    Map<Integer, List<T>> result = IntStream.range(0, list.size())  
+            .boxed()  
+            .collect(Collectors.groupingBy(i -> i / size, Collectors.mapping(list::get, Collectors.toList())));  
+  
+    return List.copyOf(result.values());  
+}
+
+// Collectors.mapping(Function<? super T,? extends U> mapper,Collector<? super U,A,R> downstream) 前面是类型转换方法, 后面是聚合方法
+
+//<T,K> Collector<T,?,Map<K,List<T>>> Collectors.groupingBy(Function<? super T,? extends K> classifier) 传入分类函数 
+fullPathList.stream().collect(Collectors.groupingBy(FullPath::getStatisType));
+
+// Collectors.groupingBy(Function<? super T,? extends K> classifier, Collector<? super T,A,D> downstream)  传入分类函数和聚合方法
+
 ```
 
 Java 的 Stream 在以下情况下可能会有多线程风险：
 1. **使用并行流（Parallel Stream）时**：
-    - 并行流会将任务分成多个子任务并行执行，如果操作不是线程安全的，可能会导致数据竞争和不一致性。
+    - 并行流会将任务分成多个子任务并行执行，如果操作不是线程安全的，可能会导致数据竞争和不一致性
 2. **共享可变状态**：
-    - 如果流操作中使用了共享的可变状态（例如，外部变量或集合），并且这些状态在多个线程中被修改，可能会导致线程安全问题。
+    - 如果流操作中使用了共享的可变状态（例如，外部变量或集合），并且这些状态在多个线程中被修改，可能会导致线程安全问题
 3. **非线程安全的终端操作**：
-    - 终端操作（例如 `collect`）如果使用了非线程安全的集合或数据结构，可能会导致并发修改异常或数据不一致。
+    - 终端操作（例如 `collect`）如果使用了非线程安全的集合或数据结构，可能会导致并发修改异常或数据不一致
 4. **自定义的非线程安全的中间操作**：
-    - 如果自定义了中间操作，并且这些操作不是线程安全的，也可能会导致多线程问题。
-
+    - 如果自定义了中间操作，并且这些操作不是线程安全的，也可能会导致多线程问题
 ## Optional
 非空判断
 ```java
@@ -148,6 +165,19 @@ now.toEpochMilli();    // 毫秒
 // 转换为ZonedDateTime
 ZonedDateTime zdt = ins.atZone(ZoneId.systemDefault());
 ```
+
+# 日志
+日志目前分为三层：接口层、实现层、适配层
+> 接口层`interface`：只定义接口
+> 实现层：真正干活的，但不是接口层的实现
+> 适配层`adapter`：将接口层和实现层连接起来
+
+适配层绑定实现层桥接到接口层，比如：`Slf4j(Slf4j-api)` -> `slf4j-jcl` -> `JCL`
+每个实现层有很多适配层桥接到不同接口层，反正也亦然
+
+> 适配层会依赖实现层和接口层，项目需要添加日志只需要选择实现层和接口层然后添加两者适配层的依赖即可(注意与其他库的接口层接口匹配)
+
+常见的日志解决方案: `Slf4j` + `Logback` 、`Slf4j` + `Log4j 2`、`Log4j 2`、`Logging`
 # Lombok
 自动为`pojo`添加`get/set`方法、构造器方法、支持链式访问`pojo` 还支持日志输出
 
@@ -413,7 +443,32 @@ public static void main(String[] args) {
 }
 ```
 ## Quartz
+[官方文档](https://www.quartz-scheduler.org/documentation/quartz-2.2.2/tutorials/)
+提供了灵活可靠的方式来管理和执行定时任务的任务调度框架
 
+关键API: `Scheduler`、`Job`、`JobDetail`、`JobBuilder`、`Trigger`、`TriggerBuilder`
+`Scheduler`: 执行任务的调度器
+`Job`: 执行的任务
+`JobDetail`: 任务的详细信息(调度器存储这个)
+`Trigger`: 任务的触发器(时间触发)
+### JobStore
+`JobStore`负责跟踪提供给调度程序的所有工作数据
+> 可以提供给用于生成调度程序实例的`SchedulerFactory`的属性文件或对象中声明使用哪个`JobStore`(及其配置)
+> 永远不要在代码中直接使用`JobStore`实例
+
+常用的三种`JobStore`实例：`RAMJobStore`、`JobStoreTX`、`JobStoreCMT`
+- `RAMJobStore`基于`RAM`存储数据，因此速度最快配置简单，但当程序结束所有调度信息都会丢失
+- `JobStoreTX`、`JobStoreCMT`使用数据库存储数据(`JDBC`)，如果不需要将调度命令（例如添加和删除触发器）绑定到其他事务选择前者，后者反之
+
+> 使用`JDBCJobStore`需要配置数据源和初始化数据库，`Quartz`适配了大部分数据库，内置了数据库连接驱动并可自动初始化数据库
+
+配置数据源：
+- 让`Quartz`创建和管理数据源本身 - 通过提供数据库的所有连接信息
+- 让`Quartz`使用由`Quartz`在其中运行的应用程序服务器管理的数据源 - 通过为`JDBCJobStore`提供数据源的`JNDI`名称
+
+数据库驱动(`DriverDelegate`)：常用的`StdJDBCDelegate`，对于使用其发生问题时可选择对应数据库对应的驱动，从`org.quartz.impl.jdbcjobstore`包和其子包中寻找
+
+> 如果线程池时常满载，对于数据库连接池的大小应为`threadPool + 2`
 ### Cron
 定时任务表达式，格式：`second minute hour day month week [year]`
 可填数组或字符`* ? - , / L W C #`
@@ -426,6 +481,7 @@ public static void main(String[] args) {
 > `W` 表示距当前最近的工作日不可以跨月，只能在`day`中使用
 
 如：`0/20 0/30 * * 7,8 ? *` 表示`Every 20 seconds, every 30 minutes, every hour, every day, only in July and August`
+
 # 生成ID
 [ID使用场景](https://javaguide.cn/distributed-system/distributed-id-design.html)
 ## UUID

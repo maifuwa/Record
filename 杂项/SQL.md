@@ -490,6 +490,9 @@ from orders;    -- if 能嵌套使用
       count(*) as number
     from user_profile
     group by age_cut;
+
+
+SHOW VARIABLES LIKE '%time_zone%';  # 查看mysql时区
 ```
 
 #### mysql 的数据类型
