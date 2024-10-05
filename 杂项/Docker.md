@@ -124,6 +124,7 @@ docker run -d -p 15672:15672 -p 5672:5672 \
 rabbitmq:management
 ```
 
+删除未启动的容器`docker system prune -f`
 # Dockerfile
 用来构建镜像的文本文件，文本内容包含了一条条构建镜像所需的指令和说明
 > 已经集成在`docker`，不需要额外下载
@@ -173,6 +174,7 @@ docker compose logs
 docker compose build 构建或重新构建服务
 docker compose start | stop | restart
 
+docker-compose down --remove-orphans 清除旧容器和未使用的资源
 docker compose up -f xxx.xxx up -d 后台运行(xxx.xxx是docker-compose文件)
 ```
 ## 最佳实践
