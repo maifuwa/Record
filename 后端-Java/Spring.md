@@ -305,7 +305,7 @@ Java 中的线程池还提供了四种拒绝策略：
 ~~等着填坑~~
 ## 其他事项
 1. 定制Banner,只需要添加banner.txt到src/main/resources中即可,[创建banner.txt](http://www.network-science.de/ascii/)
-2. @Bean 的默认名字是方法名，不是返回值类名 [Bean详解](https://www.liaoxuefeng.com/wiki/1252599548343744/1308043627200545)
+2. `@Bean`的默认名字是方法名，不是返回值类名 [Bean详解](https://www.liaoxuefeng.com/wiki/1252599548343744/1308043627200545)
 # Spring Web
 `SpringBoot`的`web`模块，内置`Tomcat`使得项目能够直接运行，不再需要手动打包成`war`放入`Tomcat`运行，并能直接打包成`jar`运行
 
@@ -526,6 +526,20 @@ public Jackson2ObjectMapperBuilder jackson2ObjectMapperBuilder() {
                     new ZonedDateTimeSerializer(dateTimeFormatter))  // 修改时间格式
             .serializationInclusion(JsonInclude.Include.NON_NULL);   // 忽略null值
 }
+```
+
+`ObjectNode`常用`api`
+```java
+ObjectNode objectNode = objectMapper.createObjectNode();
+
+objectNode.put("id", 1);
+objectNode.putPOJO("user", user);
+objectNode.putArray("array").addPOJO(user);
+objectNode.putIfAbsent("user", JsonUtil.toObjectNode(user)); // put not over write
+
+objectNode.toPrettyString(); // json style
+
+objectNode.get("user");
 ```
 
 ## 网络状态码
@@ -782,7 +796,7 @@ mybatis:
 使用Mybaits官方提供的[逆向工程工具](https://mybatis.org/generator/quickstart.html)，快速生成基础代码
 
 使用`maven`插件的方式配置:
-1. 在`POM.xml`中提供`mybaits`、`mybatis-generator-core`的依赖，`mybatis-generator-maven-plugin`的插件 (记得带上数据库连接驱动)
+1. 在`pom.xml`中提供`mybaits`、`mybatis-generator-core`的依赖，`mybatis-generator-maven-plugin`的插件 (记得带上数据库连接驱动)
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
