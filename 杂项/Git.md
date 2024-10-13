@@ -92,6 +92,6 @@ git remote set-url origin git@email:username/ProjectName.git
 文件路径不正常 `git config --global core.quotepath false`
 
 提交信息中文乱码(windows)
-1. 修改`git bash`配置；`options` -> `Text` -> `Local` -> `zh_CN`
-2. 修改`windows`系统变量；控制面板 -> 区域 -> 管理 -> 更改系统区域设置 -> 使用 `UTF-8` 提供全球语言支持
+1. 修改`git bash`配置: `options` -> `Text` -> `Local` -> `zh_CN`
+2. 修改`windows`系统变量: 控制面板 -> 区域 -> 管理 -> 更改系统区域设置 -> 使用 `UTF-8` 提供全球语言支持
 
