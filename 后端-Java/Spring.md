@@ -956,6 +956,11 @@ spring:
     properties:  
       hibernate:  
         highlight_sql: true  # 高亮SQL语句
+
+	sql:  
+	  init:  # 初始化数据库
+	    mode: always  
+	    schema-locations: classpath:schema.sql
 ```
 
 >  `ddl-auto` 用于设置表的创建和修改，可选: `none`、`create`、`create-drop`、`update`、`validate`

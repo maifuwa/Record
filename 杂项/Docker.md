@@ -71,6 +71,8 @@ docker volume rm vol_name      删除数据卷
 docker volume ls               查看所有数据卷
 docker volume inspect vol_name 查看数据卷信息
 docker volume prune            清理没有被挂载的数据卷
+
+docker system prune -a         清理所有没被使用的容器、镜像、容器卷、网络
 ```
 
 在使用`docker run`命令时，使用`--mount`来挂载数据卷 如：
@@ -104,6 +106,7 @@ docker 网络有三种类型(driver): bridge、host、null
 >`docker run -itd --network bridge_name -p 8080:8080 images` 指定网络创建容器
 ![[docker三种网络模式对比.png]]
 
+> 没有`DNS`就无法使用解析容器名
 # 最佳实践
 ```bash
 docker run -d -p 3306:3306 \
@@ -145,18 +148,40 @@ rabbitmq:management
 | USER       | 指定容器运行时的用户                               |
 ## 最佳实践
 Dockerfile
-```bash
-FROM mysql:latest   
-ENV MYSQL_ROOT_PASSWORD password   
-EXPOSE 3306
+```Dockerfile
+FROM maven:3.9.9-amazoncorretto-17-alpine AS build  
+WORKDIR /build  
+COPY pom.xml .  
+RUN mvn dependency:go-offline  
+COPY src ./src  
+RUN mvn clean package -DskipTests  
+  
+FROM amazoncorretto:17  
+ARG PROFILE=dev  
+ARG APP_VERSION=1.0.0  
+  
+WORKDIR /app  
+COPY --from=build /build/target/book-network-*.jar /app/  
+  
+EXPOSE 8080  
+  
+ENV DB_URL=jdbc:postgresql://postgresql_githubCiCD:5432/githubCiCD  
+  
+ENV ACTIVE_PROFILE=${PROFILE}  
+ENV JAR_VERSION=${APP_VERSION}  
+  
+CMD java -jar -Dspring.profiles.active=${ACTIVE_PROFILE} -Dspring.datasource.url=${DB_URL} github-cicd-${JAR_VERSION}.jar
 ```
 
 构建
-```bash
-# Dockerfile 同级目录
-docker build 构建容器
-docker build --rm -f -t  # -t 设置镜像名称及标签  name:tag
-```
+`docker build [OPTIONS] context`
+`[OPTIONS]: -f -t --build-arg
+> `-f` 指定`Dockerfile name`
+> `-t` 指定`images name`
+> `--build-arg` 指定`ARG`
+
+例子: `docker build -t test:1.0.0 -f .\doc\Dockerfile .`
+> 创建名为`test:1.0.0`的镜像，`Dockerfile`位于`.\doc\Dockerfile`，使用当前目录作为上下文路径
 
 # Docker compose
 用于定义和运行多容器 Docker 应用程序的工具。使用YML文件来配置应用程序需要的所有服务
@@ -175,7 +200,7 @@ docker compose build 构建或重新构建服务
 docker compose start | stop | restart
 
 docker-compose down --remove-orphans 清除旧容器和未使用的资源
-docker compose up -f xxx.xxx up -d 后台运行(xxx.xxx是docker-compose文件)
+docker compose -f xxx.xxx up -d 后台运行(xxx.xxx是docker-compose文件)
 ```
 ## 最佳实践
 单`docker-compose.yml`文件
