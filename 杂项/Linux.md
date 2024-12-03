@@ -136,6 +136,72 @@ systemctl status xxx.service   # 查看服务运行状态
 > `screen -ls` 即可查看开启的`screen`  
 > 可以使用 `kill pid` 关闭 `screen`
 
+# Firewall
+`redhat`系默认使用的防火墙工具，但底层还是`iptables`
+![[firewalld-comparison.png]]
+> `firewall-config` GUI配置工具，`firewall-cmd` CLI配置工具 `firewalld` 守护进程
+
+启动: `systemctl start firewalld`
+查看状态: `systemctl status firewalld` | `firewall-cmd --state`
+
+查看所有设置: `firewall-cmd --list-all`
+## 配置
+`firewall`有`Zones`、`Service`
+
+运行时和永久设置
+运行时的修改会立刻执行，但当`firewalld`重启设置会充值回永久值
+```bash
+firewall-cmd --permanent <other options>   # 直接修改永久值
+
+firewall-cmd --runtime-to-permanent        # 将运行时设置写入永久值
+
+firewall-cmd --reload                      # 重启服务
+
+firewall-cmd <other options> --timeout 15m # 15分钟后自动取消设置
+```
+### zones
+其配置文件在`/etc/firewalld/zones/` 模板文件`/usr/lib/firewalld/zones/`
+有`block`、`public`、`trusted`...
+默认使用`public` 除了开放的服务`incoming`流量皆被禁止
+
+`public.xml`
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<zone>
+  <short>Public</short>
+  <description>For use in public areas. You do not trust the other computers on networks to not harm your computer. Only selected incoming connections are accepted.</description>
+  <service name="ssh"/>
+  <service name="dhcpv6-client"/>
+  <service name="cockpit"/>
+  <forward/>
+</zone>
+```
+### service
+其配置文件在`/etc/firewalld/services/` 模板文件`/usr/lib/firewalld/services/`
+
+`ssh.xml`
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<service>
+  <short>SSH</short>
+  <description>Secure Shell (SSH) is a protocol for logging into and executing commands on remote machines. It provides secure encrypted communications. If you plan on accessing your machine remotely via SSH over a firewalled interface, enable this option. You need the openssh-server package installed for this option to be useful.</description>
+  <port protocol="tcp" port="22"/>
+</service>
+```
+
+除了添加配置文件也可使用`firewall-cmd`添加服务
+> 注意`firewalld`未激活时才能添加
+```bash
+firewall-cmd --new-service=service-name 
+```
+### port
+直接操作开放端口
+```bash
+firewall-cmd --add-port=port-number/port-type      # 添加端口/协议
+
+firewall-cmd --remove-port=port-number/port-type   # 删除端口/协议
+```
+> `port-type`可选: `tcp`、`udp`、`sctp`、`dccp`
 # WSL
 当linux不经如你心意，回归windows吧
 ## 基础命令

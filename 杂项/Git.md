@@ -82,10 +82,10 @@ git config merge.ff no  # 将合并模式修改为默认 no-ff
 切换仓库的目标地址
 ```bash
 从ssh切换至https 
-git remote set-url origin(远程仓库名称) https://email/username/ProjectName.git 
+git remote set-url origin(远程仓库名称) https://email/username/projectName.git 
 
 从https切换至ssh 
-git remote set-url origin git@email:username/ProjectName.git 
+git remote set-url origin git@email:username/projectName.git 
 ```
 
 ## git 乱码

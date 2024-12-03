@@ -175,7 +175,7 @@ CMD java -jar -Dspring.profiles.active=${ACTIVE_PROFILE} -Dspring.datasource.url
 
 构建
 `docker build [OPTIONS] context`
-`[OPTIONS]: -f -t --build-arg
+`[OPTIONS]: -f -t --build-arg`
 > `-f` 指定`Dockerfile name`
 > `-t` 指定`images name`
 > `--build-arg` 指定`ARG`
