@@ -295,10 +295,15 @@ sudo systemctl enable --now v2raya
 ```
 > google dns ipv4:`8.8.8.8,8.8.4.4` ipv6:`2001:4860:4860::8888,2001:4860:4860::8844`
 
+## 字体
+```
+yay maple-fonts-ttf # 安装等宽字体
+yay lxgw-wenkai     # 安装阅读字体
+```
+
 基本软件
 ```bash
 yay -S google-chrome
-yay -S maple-fonts-ttf
 sudo pacman -S extra/jdk17-openjdk
 sudo pacman -S npm
 sudo pacman -S docker
