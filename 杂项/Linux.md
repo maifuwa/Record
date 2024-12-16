@@ -297,8 +297,8 @@ sudo systemctl enable --now v2raya
 
 ## 字体
 ```
-yay maple-fonts-ttf # 安装等宽字体
-yay lxgw-wenkai     # 安装阅读字体
+yay ttf-maple       # 安装等宽字体
+yay lxgw-wenkai     # 安装阅读字体(霞鹜)
 ```
 
 基本软件

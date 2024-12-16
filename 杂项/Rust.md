@@ -27,3 +27,9 @@ use cargo to build `cargo build --target x86_64-pc-windows-gnu`
 > `--no-deps` not add lib to doc
 > rust will set `private` to all things in default, if want to see code on doc should add `pub` before the code
 
+`cargo publish` to push your crate on [crates](https://crates.io/)
+1. create a account in crates
+2. generate a `token` for login
+3. run `cargo login` in terminal
+4. ~~Optional~~ run `cargo publish --dry-run` for test you create correctness
+5. finally, run `cargo publish` in termainl
