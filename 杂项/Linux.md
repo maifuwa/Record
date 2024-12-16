@@ -135,7 +135,16 @@ systemctl status xxx.service   # 查看服务运行状态
 > 如果需要重新进入`screen`，`screen -r` 进入上次进入的`screen`  
 > `screen -ls` 即可查看开启的`screen`  
 > 可以使用 `kill pid` 关闭 `screen`
-
+# BBR
+`BBR`是瓶颈带宽和往返传播时间的缩写，是谷歌开发的一种现代拥塞控制算法。它通过有效地调整网络管道的大小来优先考虑更快的数据传输，以提高整体性能。
+```bash
+sysctl net.ipv4.tcp_congestion_control    # 查看当前使用算法
+sudo modprobe tcp_bbr                     # 查看bbr的兼容性
+# 配置bbr
+sudo sh -c 'echo "net.core.default_qdisc=fq" >> /etc/sysctl.conf'
+sudo sh -c 'echo "net.ipv4.tcp_congestion_control=bbr" >> /etc/sysctl.conf'
+sudo sysctl -p  # 重启sysctl已启用配置
+```
 # Firewall
 `redhat`系默认使用的防火墙工具，但底层还是`iptables`
 ![[firewalld-comparison.png]]
