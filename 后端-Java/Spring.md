@@ -905,8 +905,12 @@ generatorConfig.xml
         <javaClientGenerator type="XMLMAPPER" targetPackage="com.bigboss.mapper" targetProject="src/main/java"/>  
   
         <table tableName="%">  
+			<!-- 关闭默认字段命名转换 -->  
+			<property name="useActualColumnNames" value="true"/>
             <!-- 用来指定主键生成策略 -->  
-            <generatedKey column="id" sqlStatement="MySql" identity="true"/>  
+            <generatedKey column="id" sqlStatement="MySql" identity="true"/>
+            <!-- 手动指定字段名映射 -->  
+            <columnOverride column="collect_time" property="collectTime" javaType="String"/>
         </table>    
     </context>
 </generatorConfiguration>
