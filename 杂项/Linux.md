@@ -32,11 +32,10 @@
 
 终止指定`PID`进程 `kill [-s sigspec | -n signum | -sigspec] pid`
 终止服务的全部进程 `killall service_name`
-
 ## echo
 `echo`命令用于在终端输出字符串或变量提取后的值 格式 `echo [字符串 | $变量]
 
-> 在终端显示命令结果使用``或`${}`包裹 如: echo `pwd`或`echo ${pwd}`
+> 在终端显示命令结果使用`${}`包裹 如: `echo pwd`或`echo ${pwd}`
 
 `>` 表示输出重定向，输出到文件如果没有指定文件则创建，有则覆盖
 
@@ -135,7 +134,8 @@ systemctl status xxx.service   # 查看服务运行状态
 > 如果需要重新进入`screen`，`screen -r` 进入上次进入的`screen`  
 > `screen -ls` 即可查看开启的`screen`  
 > 可以使用 `kill pid` 关闭 `screen`
-# BBR
+
+## BBR
 `BBR`是瓶颈带宽和往返传播时间的缩写，是谷歌开发的一种现代拥塞控制算法。它通过有效地调整网络管道的大小来优先考虑更快的数据传输，以提高整体性能。
 ```bash
 sysctl net.ipv4.tcp_congestion_control    # 查看当前使用算法
@@ -145,6 +145,34 @@ sudo sh -c 'echo "net.core.default_qdisc=fq" >> /etc/sysctl.conf'
 sudo sh -c 'echo "net.ipv4.tcp_congestion_control=bbr" >> /etc/sysctl.conf'
 sudo sysctl -p  # 重启sysctl已启用配置
 ```
+# 命令别名
+在`~/.bashrc`文件可以添加一些复杂命令的别名
+```bash
+alias ll='ls -alF'   # 输出当前文件夹的详细信息
+```
+添加后执行`source ~/.bashrc`重新加载终端的配置文件
+# 用户权限
+用户管理
+```bash
+sudo useradd -m username   # 创建用户 -m 同时创建HOME目录
+sudo userdel -r username   # 删除用户
+sudo passwd username       # 修改用户密码
+
+sudo groupadd groupname   # 创建用户组
+sudo usermod -aG groupname username # 将用户添加近用户组 -a 表示追加 -G 表示指定组
+```
+
+> 如果更改了已登录系统账户所属的用户组，该用户必须登出系统后再登录，组关系的更改才能生效。
+
+文件权限
+`ls -l` 查看文件权限
+`-rwxrwxr-x 1 root rich 4882 12月11日 13:55 myprog`
+>`myprog`是个文件
+>执行权限和所属于`root`用户(`rwx`)、`rich`用户组(`rwx`)、其他人(`r-x`)
+>硬链接`1`个
+>大小`4882byte`
+>最后修改时间`12月11日 13:55`
+
 # Firewall
 `redhat`系默认使用的防火墙工具，但底层还是`iptables`
 ![[firewalld-comparison.png]]
