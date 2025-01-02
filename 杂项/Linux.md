@@ -173,6 +173,14 @@ sudo usermod -aG groupname username # 将用户添加近用户组 -a 表示追�
 >大小`4882byte`
 >最后修改时间`12月11日 13:55`
 
+改变文件所属
+```bash
+chmod options mode file
+chown options owner[.group] file 
+chgrp options group file
+```
+> `chmod`命令用来改变文件权限;`chown`命令用来改变文件的属主;`chgrp`命令用来改变文件的默认属组
+> 只有`root`用户能够改变文件的属主;任何属主都可以改变文件的属组，但前提是属主必须是原属组和目标属组的成员
 # Firewall
 `redhat`系默认使用的防火墙工具，但底层还是`iptables`
 ![[firewalld-comparison.png]]
